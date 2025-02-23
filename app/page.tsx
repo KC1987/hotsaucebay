@@ -18,7 +18,7 @@ export default async function Page() {
       <h1>HotSauceBay</h1>
       { products_data.map ( (product, index) =>
       <div key={index} >
-        <Link href={`/products/${product.name}`} >
+        <Link href={`/hotsauce/${product.slug}`} >
           <div className="border-solid border-2 border-gray-500 p-2" >
             <img src={product.imageUrls[0]} width={300} height={200} />
             <h2>{product.name}</h2>
