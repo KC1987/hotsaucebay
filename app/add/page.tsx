@@ -1,6 +1,6 @@
 'use client'
 import imageCompression from "browser-image-compression";
-
+import { countries as countries_list } from "@/app/lib/data";
 import Ingredients from "@/components/ingredients";
 
 import { useEffect, useState } from "react"
@@ -18,13 +18,13 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function Add () {
   const [ ingredients, setIngredients ] = useState([]);
+  const [ countries, setCountries ] = useState([]);
   const [ images, setImages ] = useState([]);
   const [ imageUrls, setImageUrls ] = useState([]);
 
 
   const [ name, setName ] = useState('');
   const [ brand, setBrand ] = useState('');
-  const [ country, setCountry ] = useState('');
   const [ shu, setShu ] = useState('');
   const [ rating, setRating ] = useState('');
   const [ url, setUrl ] = useState('');
@@ -34,6 +34,8 @@ export default function Add () {
   const [ color, setColor ] = useState('');
   const [ listPrice, setListPrice ] = useState('');
   const [ selectedIngredients, setSelectedIngredients ] = useState( new Set([]) );
+  const [ selectedCountries, setSelectedCountries ] = useState( new Set([]) );
+  const [ slug, setSlug ] = useState('');
 
   const [ success, setSuccess ] = useState(false);
   const [ imgSuccess, setImgSuccess ] = useState(false);
@@ -50,6 +52,35 @@ export default function Add () {
     if ( e.target.files && e.target.files[0] ) {
       setImages( Array.from( e.target.files ) )
     }
+  };
+
+  function addIngredients () {
+    // Array of selected ingredients
+    const ings = Array.from(selectedIngredients);
+
+    // New array of objects with keys and labels
+    let ingData:any = [];
+
+    // Go through ingredients and search for right key, add object to ingData
+    ings.map( ing => {
+      const match = ingredients.find( i => i.key === ing );
+      ingData.push( match );
+    });
+
+    return ingData
+  };
+
+  function addCountries () {
+    const cnts = Array.from(selectedCountries);
+
+    let cntData:any = [];
+
+    cnts.map( cnt => {
+      const match = countries_list.find( c => c.key === cnt );
+      cntData.push( match );
+    });
+
+    return cntData
   };
 
   const handleImageUpload = async () => {
@@ -86,40 +117,51 @@ export default function Add () {
     const product = {
       name,
       brand,
-      country,
+      countries: addCountries(),
       shu: Number(shu),
       bayscore: Number(rating),
       url,
       affLink,
       dateAdded: serverTimestamp(),
-      category: 'hotsauce',
-      ingredients: Array.from(selectedIngredients),
+      categories: [{ label: 'Hotsauce', key: 'hotsauce' }],
+      ingredients: addIngredients(),
       description,
       imageUrls,
+      slug,
     };
 
-    useAddProduct(product);
+    try {
+      useAddProduct(product);
+      
+      setName('');
+      setBrand('');
+      setIngredients([]);
+      setCountries([]);
+      setShu('');
+      setRating('');
+      setUrl('');
+      setAffLink('');
+      setImageUrls([]);
+      setImages([]);
+      setColor('');
+      setListPrice('');
+      setReleaseDate('');
+      setDescription('');
+      setSlug('');
+      setSelectedCountries( new Set([]) );
+      setSelectedIngredients( new Set([]) );
+  
+      setSuccess(true);
+      setImgSuccess(false);
+  
+      setTimeout(() => {
+        setSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error(error);
+      return
+    }
 
-    setName('');
-    setBrand('');
-    setCountry('');
-    setShu('');
-    setRating('');
-    setUrl('');
-    setAffLink('');
-    setImageUrls([]);
-    setImages([]);
-    setColor('');
-    setListPrice('');
-    setReleaseDate('');
-    setDescription('');
-
-    setSuccess(true);
-    setImgSuccess(false);
-
-    setTimeout(() => {
-      setSuccess(false);
-    }, 2000);
   };
 
 
@@ -128,11 +170,35 @@ export default function Add () {
       <div className="flex flex-col">
         
       <h1 className="text-2xl" >Add</h1>
-
+      <p>Selected countries: { JSON.stringify( Array.from(selectedCountries) ) }</p>
       <p>Selected ingredients: { JSON.stringify( Array.from(selectedIngredients) ) }</p>
       <Divider orientation="horizontal" />
       <form onSubmit={handleSubmit} >
         <ul>
+          <li>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button variant="bordered" >Country</Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                // disallowEmptySelection
+                items={countries_list}
+                closeOnSelect={false}
+                selectedKeys={selectedCountries}
+                selectionMode="multiple"
+                variant="flat"
+                onSelectionChange={setSelectedCountries}
+                >
+                { (country):any => 
+                  <DropdownItem
+                  key={country.key}
+                  >
+                    {country.label}
+                  </DropdownItem>
+                  }
+              </DropdownMenu>
+            </Dropdown>
+          </li>
           <li>
             <Dropdown>
               <DropdownTrigger>
@@ -162,12 +228,12 @@ export default function Add () {
             <input type="text" value={name} onChange={ e => setName(e.target.value) } />
           </li>
           <li className="my-2" >
-            <label htmlFor="maker">Brand</label>
-            <input type="text" value={brand} onChange={ e => setBrand(e.target.value) } />
+            <label htmlFor="slug">Slug</label>
+            <input type="text" value={slug} onChange={ e => setSlug(e.target.value) } />
           </li>
           <li className="my-2" >
-            <label htmlFor="country">Country</label>
-            <input type="text" value={country} onChange={ e => setCountry(e.target.value) } />
+            <label htmlFor="maker">Brand</label>
+            <input type="text" value={brand} onChange={ e => setBrand(e.target.value) } />
           </li>
           <li className="my-2" >
             <label htmlFor="shu">Scoville Heat Units</label>

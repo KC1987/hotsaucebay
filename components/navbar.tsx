@@ -58,6 +58,7 @@ export const Navbar = () => {
           </NextLink>
         </NavbarBrand>
         <Link href="/add" >Add  </Link>
+        <Link href="/browse">Browse</Link>
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
           {siteConfig.navItems.map((item) => (
             <NavbarItem key={item.href}>
