@@ -16,7 +16,7 @@ export default async function Sauce ( { params }:any ) {
     <div>
       <h1>{ sauce.name }</h1>
       
-      <h1>{ sauce.brand }</h1>
+      <h1>{ sauce.brand.label }</h1>
       <h1>{ sauce.url }</h1>
       <h1>{ sauce.affLink }</h1>
       <h1>{ sauce.bayscore }</h1>

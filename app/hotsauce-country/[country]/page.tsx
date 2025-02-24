@@ -17,7 +17,7 @@ export default async function Page ({ params }:any) {
 
   return (
     <div>
-      <h1 className="text-2xl" >{ countryData.label }</h1>
+      <h1 className="text-2xl" >Hotsauces from { countryData.label }</h1>
       {
         sauces.map( (sauce, i) => 
           <div key={i} >

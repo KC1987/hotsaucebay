@@ -10,7 +10,7 @@ export default async function Page () {
       {
         countries.map( c =>
           <div key={c.key} >
-            <Link href={`/country/${c.key}`} >{c.label}</Link>
+            <Link href={`/hotsauce-country/${c.key}`} >{c.label}</Link>
           </div>
         )
       }

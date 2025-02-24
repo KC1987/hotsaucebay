@@ -22,7 +22,7 @@ export default async function Page() {
           <div className="border-solid border-2 border-gray-500 p-2" >
             <img src={product.imageUrls[0]} width={300} height={200} />
             <h2>{product.name}</h2>
-            <p>{product.brand}</p>
+            <p>{product.brand.label}</p>
             <p>{product.country}</p>
             <p>{product.rating}</p>
             <p>{product.hl}</p>

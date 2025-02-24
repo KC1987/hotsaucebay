@@ -9,7 +9,7 @@ export default function ListItem ({ sauce }:any) {
     <div className="bg-slate-700 flex flex-row p-4 gap-4" >
 
         <p>{ sauce.name }</p>
-        <p>{ sauce.brand }</p>
+        <p>{ sauce.brand.label }</p>
         <p>{ sauce.shu }</p>
         <p>{ sauce.bayscore }</p>
         { sauce.categories?.map( (c:any) => <p key={c.key} >{ c.label }</p> ) }
