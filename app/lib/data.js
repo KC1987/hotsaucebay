@@ -4,9 +4,11 @@ export const brands = [
   { label: "Sun Brand", key: "sun-brand" },
   { label: "Moon Brand", key: "moon-brand" },
   { label: "Super Brand", key: "super-brand" },
+  { label: "Hos Brand", key: "hos-brand" },
+  { label: "Uber Brand", key: "uber-brand" },
+  { label: "India Brand", key: "india-brand" },
+  { label: "Proper Brand", key: "proper-brand" },
 ];
-
-
 
 export const countries = [
   { label: "Mexico", key: "mexico" },
@@ -58,7 +60,5 @@ export const countries = [
   { label: "Bhutan", key: "bhutan" },
   { label: "Nepal", key: "nepal" },
   { label: "Bangladesh", key: "bangladesh" },
-  { label: "Taiwan", key: "taiwan" }
+  { label: "Taiwan", key: "taiwan" },
 ];
-
-

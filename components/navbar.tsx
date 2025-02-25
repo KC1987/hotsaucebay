@@ -57,7 +57,7 @@ export const Navbar = () => {
             <p className="font-bold text-inherit">ACME</p>
           </NextLink>
         </NavbarBrand>
-        <Link href="/add" >Add  </Link>
+        <Link href="/add">Add </Link>
         <Link href="/browse">Browse</Link>
         <ul className="hidden lg:flex gap-4 justify-start ml-2">
           {siteConfig.navItems.map((item) => (

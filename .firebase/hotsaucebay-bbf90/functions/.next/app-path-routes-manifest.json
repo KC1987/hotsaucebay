@@ -1,0 +1,16 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/add/page": "/add",
+  "/hotsauce-brand/[brand]/page": "/hotsauce-brand/[brand]",
+  "/hotsauce-country/[country]/page": "/hotsauce-country/[country]",
+  "/hotsauce/[slug]/page": "/hotsauce/[slug]",
+  "/product/[id]/page": "/product/[id]",
+  "/page": "/",
+  "/browse/page": "/browse",
+  "/browse/hotsauce-countries/page": "/browse/hotsauce-countries",
+  "/about/page": "/about",
+  "/blog/page": "/blog",
+  "/browse/hotsauce-brands/page": "/browse/hotsauce-brands",
+  "/docs/page": "/docs",
+  "/pricing/page": "/pricing"
+}

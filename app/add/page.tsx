@@ -1,285 +1,382 @@
-'use client'
+"use client";
+
+import { useEffect, useState } from "react";
 import imageCompression from "browser-image-compression";
-import { countries as countries_list } from "@/app/lib/data";
-import Ingredients from "@/components/ingredients";
-
-import { useEffect, useState } from "react"
-import { useAddProduct, useGetIngredients } from "@/app/lib/hooks";
-
-
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Textarea } from "@heroui/react";
-import { Button } from "@heroui/button";
-import { Divider } from "@heroui/divider";
-import { serverTimestamp } from "firebase/firestore";
-import { storage } from "@/app/lib/firebase";
+import { collection, getDocs, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
+// Components
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Textarea,
+  Selection,
+} from "@heroui/react";
+import { Button } from "@heroui/button";
 
+// Data & Config
+import { countries as countries_list, brands } from "@/app/lib/data";
+import { db, storage } from "@/app/lib/firebase";
+import { useAddProduct } from "@/app/lib/hooks";
+import { getSelectionSize, getSelectedKeys } from "@/app/lib/utils";
 
-export default function Add () {
-  const [ ingredients, setIngredients ] = useState([]);
-  const [ countries, setCountries ] = useState([]);
-  const [ images, setImages ] = useState([]);
-  const [ imageUrls, setImageUrls ] = useState([]);
+// Types
+interface Ingredient {
+  key: string;
+  label: string;
+}
 
+interface Country {
+  key: string;
+  label: string;
+}
 
-  const [ name, setName ] = useState('');
-  const [ brand, setBrand ] = useState('');
-  const [ shu, setShu ] = useState('');
-  const [ rating, setRating ] = useState('');
-  const [ url, setUrl ] = useState('');
-  const [ affLink, setAffLink ] = useState('');
-  const [ description, setDescription ] = useState('');
-  const [ releaseDate, setReleaseDate ] = useState('');
-  const [ color, setColor ] = useState('');
-  const [ listPrice, setListPrice ] = useState('');
-  const [ selectedIngredients, setSelectedIngredients ] = useState( new Set([]) );
-  const [ selectedCountries, setSelectedCountries ] = useState( new Set([]) );
-  const [ slug, setSlug ] = useState('');
+interface Product {
+  name: string;
+  brand: object;
+  countries: Country[];
+  shu: number;
+  bayscore: number;
+  url: string;
+  affLink: string;
+  dateAdded: any;
+  categories: Array<{ label: string; key: string }>;
+  ingredients: Ingredient[];
+  description: string;
+  imageUrls: string[];
+  slug: string;
+}
 
-  const [ success, setSuccess ] = useState(false);
-  const [ imgSuccess, setImgSuccess ] = useState(false);
+export default function Add() {
+  const { addProduct, loading, error } = useAddProduct();
 
-  useEffect( () => {
-    async function fetchIngredients () {
-      const ingredientsData = await useGetIngredients();
-      setIngredients(ingredientsData);
-    }
+  // State for data lists
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedIngredients, setSelectedIngredients] = useState<Selection>(
+    new Set([]),
+  );
+  const [selectedCountries, setSelectedCountries] = useState<Selection>(
+    new Set([]),
+  );
+  const [selectedBrands, setSelectedBrands] = useState<Selection>(new Set([]));
+
+  // Form fields
+  const [name, setName] = useState("");
+  const [brand, setBrand] = useState("");
+  const [shu, setShu] = useState("");
+  const [rating, setRating] = useState("");
+  const [url, setUrl] = useState("");
+  const [affLink, setAffLink] = useState("");
+  const [description, setDescription] = useState("");
+  const [slug, setSlug] = useState("");
+
+  // UI states
+  const [success, setSuccess] = useState(false);
+  const [imgSuccess, setImgSuccess] = useState(false);
+
+  useEffect(() => {
+    const fetchIngredients = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "ingredients"));
+        const ingredientsData = snapshot.docs.map((doc) => ({
+          key: doc.id,
+          label: doc.data().label,
+        }));
+        setIngredients(ingredientsData);
+      } catch (err) {
+        console.error("Error fetching ingredients:", err);
+      }
+    };
+
     fetchIngredients();
-  }, [] );
+  }, []);
 
-  function handleImageChange ( e:React.ChangeEvent<HTMLInputElement> ) {
-    if ( e.target.files && e.target.files[0] ) {
-      setImages( Array.from( e.target.files ) )
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setImages(Array.from(e.target.files));
     }
-  };
-
-  function addIngredients () {
-    // Array of selected ingredients
-    const ings = Array.from(selectedIngredients);
-
-    // New array of objects with keys and labels
-    let ingData:any = [];
-
-    // Go through ingredients and search for right key, add object to ingData
-    ings.map( ing => {
-      const match = ingredients.find( i => i.key === ing );
-      ingData.push( match );
-    });
-
-    return ingData
-  };
-
-  function addCountries () {
-    const cnts = Array.from(selectedCountries);
-
-    let cntData:any = [];
-
-    cnts.map( cnt => {
-      const match = countries_list.find( c => c.key === cnt );
-      cntData.push( match );
-    });
-
-    return cntData
   };
 
   const handleImageUpload = async () => {
-    const uploadPromises = images.map(async (image) => {
-        const convertedImage = await imageCompression(
-          image,
-          {
-            maxSizeMB: 0.5,
-            maxWidthOrHeight: 800,
-            useWebWorker: false,
-            // onProgress: pro => console.log(`Compression progress: `, pro),
-          }
-        );
-        console.log(`${convertedImage.name} converted`);
-          
-        const storageRef = ref(storage, `images/products/${name}/${image.name}`);
-        await uploadBytes(storageRef, convertedImage);
-        // console.log(`${convertedImage.name} uploaded`);
-  
-        const downloadURL = await getDownloadURL(storageRef);
-        return downloadURL;
-    });
-
-    const urls = await Promise.all(uploadPromises);
-    setImageUrls(urls);
-
-    setImgSuccess(true);
-  };
-
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-  function handleSubmit ( e:any ) {
-    e.preventDefault();
-
-    const product = {
-      name,
-      brand,
-      countries: addCountries(),
-      shu: Number(shu),
-      bayscore: Number(rating),
-      url,
-      affLink,
-      dateAdded: serverTimestamp(),
-      categories: [{ label: 'Hotsauce', key: 'hotsauce' }],
-      ingredients: addIngredients(),
-      description,
-      imageUrls,
-      slug,
-    };
-
-    try {
-      useAddProduct(product);
-      
-      setName('');
-      setBrand('');
-      setIngredients([]);
-      setCountries([]);
-      setShu('');
-      setRating('');
-      setUrl('');
-      setAffLink('');
-      setImageUrls([]);
-      setImages([]);
-      setColor('');
-      setListPrice('');
-      setReleaseDate('');
-      setDescription('');
-      setSlug('');
-      setSelectedCountries( new Set([]) );
-      setSelectedIngredients( new Set([]) );
-  
-      setSuccess(true);
-      setImgSuccess(false);
-  
-      setTimeout(() => {
-        setSuccess(false);
-      }, 2000);
-    } catch (error) {
-      console.error(error);
-      return
+    if (!name) {
+      alert("Please enter a product name before uploading images");
+      return;
     }
 
+    try {
+      const uploadPromises = images.map(async (image) => {
+        const compressedImage = await imageCompression(image, {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        });
+
+        const storageRef = ref(
+          storage,
+          `images/products/${name}/${image.name}`,
+        );
+        await uploadBytes(storageRef, compressedImage);
+        return getDownloadURL(storageRef);
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      setImageUrls(urls);
+      setImgSuccess(true);
+    } catch (err) {
+      console.error("Error uploading images:", err);
+      alert("Error uploading images. Please try again.");
+    }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!imgSuccess) {
+      alert("Please upload images before submitting");
+      return;
+    }
+
+    try {
+      const selectedCountryKeys = getSelectedKeys(selectedCountries);
+      const selectedIngredientKeys = getSelectedKeys(selectedIngredients);
+      const selectedBrandKey = getSelectedKeys(selectedBrands);
+
+      const product: Product = {
+        name,
+        brand: selectedBrandKey.map((key) =>
+          brands.find((b) => b.key === key),
+        )[0],
+        countries: selectedCountryKeys.map(
+          (key) => countries_list.find((c) => c.key === key)!,
+        ),
+        shu: Number(shu),
+        bayscore: Number(rating),
+        url,
+        affLink,
+        dateAdded: serverTimestamp(),
+        categories: [{ label: "Hot Sauce", key: "hotsauce" }],
+        ingredients: selectedIngredientKeys.map(
+          (key) => ingredients.find((i) => i.key === key)!,
+        ),
+        description,
+        imageUrls,
+        slug: slug.toLowerCase().replace(/\s+/g, "-"),
+      };
+
+      await addProduct(product);
+      resetForm();
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err) {
+      console.error("Error adding product:", err);
+    }
+  };
+
+  const resetForm = () => {
+    setName("");
+    setBrand("");
+    setShu("");
+    setRating("");
+    setUrl("");
+    setAffLink("");
+    setDescription("");
+    setSlug("");
+    setImages([]);
+    setImageUrls([]);
+    setSelectedCountries(new Set([]));
+    setSelectedIngredients(new Set([]));
+    setImgSuccess(false);
+  };
 
   return (
-    <div>
-      <div className="flex flex-col">
-        
-      <h1 className="text-2xl" >Add</h1>
-      <p>Selected countries: { JSON.stringify( Array.from(selectedCountries) ) }</p>
-      <p>Selected ingredients: { JSON.stringify( Array.from(selectedIngredients) ) }</p>
-      <Divider orientation="horizontal" />
-      <form onSubmit={handleSubmit} >
-        <ul>
-          <li>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button variant="bordered" >Country</Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                // disallowEmptySelection
-                items={countries_list}
-                closeOnSelect={false}
-                selectedKeys={selectedCountries}
-                selectionMode="multiple"
-                variant="flat"
-                onSelectionChange={setSelectedCountries}
-                >
-                { (country):any => 
-                  <DropdownItem
-                  key={country.key}
-                  >
-                    {country.label}
-                  </DropdownItem>
-                  }
-              </DropdownMenu>
-            </Dropdown>
-          </li>
-          <li>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button variant="bordered" >Ingredients</Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                // disallowEmptySelection
-                items={ingredients}
-                closeOnSelect={false}
-                selectedKeys={selectedIngredients}
-                selectionMode="multiple"
-                variant="flat"
-                onSelectionChange={setSelectedIngredients}
-                >
-                { (item):any => 
-                  <DropdownItem
-                  key={item.key}
-                  >
-                    {item.label}
-                  </DropdownItem>
-                  }
-              </DropdownMenu>
-            </Dropdown>
-          </li>
-          <li className="my-2" >
-            <label htmlFor="name">Name</label>
-            <input type="text" value={name} onChange={ e => setName(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="slug">Slug</label>
-            <input type="text" value={slug} onChange={ e => setSlug(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="maker">Brand</label>
-            <input type="text" value={brand} onChange={ e => setBrand(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="shu">Scoville Heat Units</label>
-            <input type="number" value={shu} onChange={ e => setShu(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="rating">Bayscore</label>
-            <input type="number" value={rating} onChange={ e => setRating(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="color">Color</label>
-            <input type="text" value={color} onChange={ e => setColor(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="listPrice">List Price</label>
-            <input type="number" value={listPrice} onChange={ e => setListPrice(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="rel-date">Release Date</label>
-            <input type="text" value={releaseDate} onChange={ e => setReleaseDate(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="url">URL</label>
-            <input type="text" value={url} onChange={ e => setUrl(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <label htmlFor="affLink">Affiliate Link</label>
-            <input type="text" value={affLink} onChange={ e => setAffLink(e.target.value) } />
-          </li>
-          <li>
-            <Textarea className="max-w-lg" label="Description" onChange={ e => setDescription(e.target.value) } />
-          </li>
-          <li className="my-2" >
-            <input type="file" onChange={handleImageChange} multiple />
-            <Button onPress={handleImageUpload} >Upload</Button>
-            { imgSuccess && <p className="text-green-500" >Images uploaded!</p> }
-          </li>
-        </ul>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex flex-col space-y-6">
+        <h1 className="text-3xl font-bold">Add New Hot Sauce</h1>
 
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="bordered" className="w-full">
+                    Select Countries ({getSelectionSize(selectedCountries)})
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={countries_list}
+                  closeOnSelect={false}
+                  selectedKeys={selectedCountries}
+                  selectionMode="multiple"
+                  onSelectionChange={setSelectedCountries}
+                >
+                  {(country) => (
+                    <DropdownItem key={country.key}>
+                      {country.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="bordered" className="w-full">
+                    Select Brand ({getSelectionSize(selectedBrands)})
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={brands}
+                  closeOnSelect={true}
+                  selectedKeys={selectedBrands}
+                  selectionMode="single"
+                  onSelectionChange={setSelectedBrands}
+                >
+                  {(brand) => (
+                    <DropdownItem key={brand.key}>{brand.label}</DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
 
-        <Button color="primary" type="submit">Submit</Button>
-      </form >
-      
-      { success && <h1 className="text-xl text-green-500" >Product added sccessfuly !</h1> }
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="bordered" className="w-full">
+                    Select Ingredients ({getSelectionSize(selectedIngredients)})
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={ingredients}
+                  closeOnSelect={false}
+                  selectedKeys={selectedIngredients}
+                  selectionMode="multiple"
+                  onSelectionChange={setSelectedIngredients}
+                >
+                  {(item) => (
+                    <DropdownItem key={item.key}>{item.label}</DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"));
+                }}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Slug"
+                value={slug}
+                onChange={(e) =>
+                  setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))
+                }
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="number"
+              placeholder="Scoville Heat Units"
+              value={shu}
+              onChange={(e) => setShu(e.target.value)}
+              className="p-2 border rounded"
+              required
+              min="0"
+            />
+            <input
+              type="number"
+              placeholder="Bayscore Rating"
+              value={rating}
+              onChange={(e) => setRating(e.target.value)}
+              className="p-2 border rounded"
+              required
+              min="0"
+              max="10"
+              step="0.1"
+            />
+          </div>
+
+          <div className="space-y-4">
+            <input
+              type="url"
+              placeholder="Product URL"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+            <input
+              type="url"
+              placeholder="Affiliate Link"
+              value={affLink}
+              onChange={(e) => setAffLink(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+
+          <Textarea
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full min-h-[100px]"
+            required
+          />
+
+          <div className="space-y-2">
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full"
+              required
+            />
+            <Button
+              onPress={handleImageUpload}
+              disabled={images.length === 0 || !name}
+              color="secondary"
+              className="w-full"
+            >
+              Upload Images
+            </Button>
+            {imgSuccess && (
+              <p className="text-green-500">Images uploaded successfully!</p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            color="primary"
+            className="w-full"
+            disabled={loading || !imgSuccess}
+          >
+            {loading ? "Adding..." : "Add Hot Sauce"}
+          </Button>
+        </form>
+
+        {success && (
+          <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg">
+            Product added successfully!
+          </div>
+        )}
+
+        {error && (
+          <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
+            Error: {error.message}
+          </div>
+        )}
       </div>
-      <Ingredients />
     </div>
-  )
+  );
 }

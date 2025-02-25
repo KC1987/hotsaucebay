@@ -17,7 +17,7 @@ const firebaseConfig = {
   storageBucket: "hotsaucebay-bbf90.firebasestorage.app",
   messagingSenderId: "601546534110",
   appId: "1:601546534110:web:6e8af9d49cfcf922cf664f",
-  measurementId: "G-Z58FCN3LXX"
+  measurementId: "G-Z58FCN3LXX",
 };
 
 // Initialize Firebase
