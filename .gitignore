@@ -14,7 +14,9 @@
 
 # production
 /build
-/.firebase/
+
+# firebase
+.firebase/
 # misc
 .DS_Store
 *.pem
