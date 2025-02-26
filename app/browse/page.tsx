@@ -5,7 +5,7 @@ export default async function Browse() {
 
   return (
       <div className="bg-gray-600 flex flex-col p-2 gap-4">
-        <BrowseCard title="Countries" url="#" icon="#" />
+
         <Link className="text-2xl" href={`/browse/hotsauce-countries`}>Countries</Link>
 
         <Link href={`/browse/hotsauce-countries`}>All countries...</Link>
