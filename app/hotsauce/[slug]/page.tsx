@@ -1,9 +1,8 @@
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { Button } from "@heroui/button";
-// import { Image } from "@heroui/react";
 
-// Types
+// Types remain unchanged
 interface Country {
   key: string;
   label: string;
@@ -51,23 +50,23 @@ export default async function Sauce({ params }: PageProps) {
   const sauce = sauceData.docs.map((doc) => doc.data())[0] as HotSauce;
 
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900">
+    <main className="min-h-screen bg-[#FFF8F0] dark:bg-[#121212]">
       <div className="max-w-4xl p-8 mx-auto">
         {/* Product Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">
+            <h1 className="text-4xl font-bold mb-2 text-[#1D3557] dark:text-[#F5F5F5]">
               {sauce.name}
             </h1>
             <div className="flex items-center gap-4">
-              <p className="text-lg text-gray-600 dark:text-gray-300">
+              <p className="text-lg text-[#457B9D] dark:text-[#B0BEC5]">
                 {sauce.brand.label}
               </p>
               <div className="flex gap-2">
                 {sauce.countries?.map((country) => (
                   <span
                     key={country.key}
-                    className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-full text-sm"
+                    className="px-3 py-1 bg-[#3D9970] dark:bg-[#66BB6A] text-white dark:text-[#F5F5F5] rounded-full text-sm"
                   >
                     {country.label}
                   </span>
@@ -76,10 +75,10 @@ export default async function Sauce({ params }: PageProps) {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">
+            <div className="text-2xl font-bold mb-1 text-[#1D3557] dark:text-[#F5F5F5]">
               Heat Level
             </div>
-            <div className="text-xl text-orange-600 dark:text-orange-400">
+            <div className="text-xl text-[#E63946] dark:text-[#FF5252]">
               {sauce.shu?.toLocaleString()} SHU
             </div>
           </div>
@@ -90,7 +89,7 @@ export default async function Sauce({ params }: PageProps) {
           {/* Left Column - Image */}
           <div className="col-span-1">
             {sauce.imageUrls?.[0] && (
-              <div className="aspect-square relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+              <div className="aspect-square relative rounded-lg overflow-hidden border border-[#3D9970] dark:border-[#66BB6A]">
                 <a
                   href={sauce.imageUrls[0]}
                   target="_blank"
@@ -110,39 +109,39 @@ export default async function Sauce({ params }: PageProps) {
           {/* Right Column - Details */}
           <div className="col-span-1 md:col-span-2 space-y-6">
             {/* Description */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
+            <div className="bg-[#FFFFFF] dark:bg-[#1E1E1E] p-6 rounded-lg border border-[#3D9970] dark:border-[#66BB6A]">
+              <h2 className="text-xl font-semibold mb-3 text-[#1D3557] dark:text-[#F5F5F5]">
                 Description
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p className="text-[#457B9D] dark:text-[#B0BEC5] leading-relaxed">
                 {sauce.description}
               </p>
             </div>
 
             {/* Bay Score */}
-            <div className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-lg border border-orange-200 dark:border-orange-800">
-              <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+            <div className="bg-[#F9A03F]/10 dark:bg-[#FFB74D]/20 p-6 rounded-lg border border-[#F9A03F] dark:border-[#FFB74D]">
+              <h2 className="text-xl font-semibold mb-2 text-[#1D3557] dark:text-[#F5F5F5]">
                 Bay Score
               </h2>
               <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                <span className="text-3xl font-bold text-[#E63946] dark:text-[#FF5252]">
                   {sauce.bayscore}
                 </span>
-                <span className="text-gray-600 dark:text-gray-400">/10</span>
+                <span className="text-[#457B9D] dark:text-[#B0BEC5]">/10</span>
               </div>
             </div>
 
             {/* Categories & Ingredients */}
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold mb-2 text-[#1D3557] dark:text-[#F5F5F5]">
                   Categories
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {sauce.categories?.map((category) => (
                     <span
                       key={category.key}
-                      className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full text-sm"
+                      className="px-3 py-1 bg-[#F9A03F] dark:bg-[#FFB74D] text-[#1D3557] dark:text-[#1E1E1E] rounded-full text-sm"
                     >
                       {category.label}
                     </span>
@@ -151,14 +150,14 @@ export default async function Sauce({ params }: PageProps) {
               </div>
 
               <div>
-                <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold mb-2 text-[#1D3557] dark:text-[#F5F5F5]">
                   Ingredients
                 </h2>
                 <div className="flex flex-wrap gap-2">
                   {sauce.ingredients?.map((ingredient) => (
                     <span
                       key={ingredient.key}
-                      className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full text-sm"
+                      className="px-3 py-1 bg-[#3D9970] dark:bg-[#66BB6A] text-white dark:text-[#1E1E1E] rounded-full text-sm"
                     >
                       {ingredient.label}
                     </span>
@@ -171,8 +170,7 @@ export default async function Sauce({ params }: PageProps) {
             <div className="pt-4">
               <Button
                 href={sauce.affLink}
-                color="success"
-                className="w-full py-3 text-white text-lg font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                className="w-full py-3 bg-[#E63946] dark:bg-[#FF5252] text-white text-lg font-semibold rounded-lg hover:opacity-90 transition-opacity"
               >
                 Buy Now
               </Button>

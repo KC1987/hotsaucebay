@@ -1,20 +1,20 @@
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../lib/firebase";
-import Sauce_list_item from "@/components/browse/sauce_list_item";
-import Categories from "@/components/browse/browse_categories";
+import BrowseCard from "@/components/browse/browse_card";
+import Link from "next/link";
 
 export default async function Browse() {
-  const collectionRef = collection(db, "products");
-
-  const productData = await getDocs(collectionRef);
-  const products = productData.docs.map((doc) => doc.data());
 
   return (
-    <div className="bg-slate-800 p-2">
-      <Categories />
-      {products.map((sauce, i) => (
-        <Sauce_list_item sauce={sauce} key={i} />
-      ))}
-    </div>
+      <div className="bg-gray-600 flex flex-col p-2 gap-4">
+        <BrowseCard title="Countries" url="#" icon="#" />
+        <Link className="text-2xl" href={`/browse/hotsauce-countries`}>Countries</Link>
+
+        <Link href={`/browse/hotsauce-countries`}>All countries...</Link>
+
+        <Link href={`/browse/hotsauce-brands`}>Brands</Link>
+        <Link href={`/browse/hotsauce-ingredients`}>Ingredients</Link>
+        <Link href={`/browse/hotsauce-flavors`}>Flavors</Link>
+        <Link href={`/browse/hotsauce-bayscore`}>Bayscore</Link>
+        <Link href={`/browse/hotsauce-hsu`}>Scoville</Link>
+      </div>
   );
 }

@@ -17,7 +17,7 @@ import {
 import { Button } from "@heroui/button";
 
 // Data & Config
-import { countries as countries_list, brands } from "@/app/lib/data";
+import { countries as countries_list, brands, flavours } from "@/app/lib/data";
 import { db, storage } from "@/app/lib/firebase";
 import { useAddProduct } from "@/app/lib/hooks";
 import { getSelectionSize, getSelectedKeys } from "@/app/lib/utils";
@@ -44,6 +44,7 @@ interface Product {
   dateAdded: any;
   categories: Array<{ label: string; key: string }>;
   ingredients: Ingredient[];
+  flavours: Array<{ label: string; key: string }>;
   description: string;
   imageUrls: string[];
   slug: string;
@@ -63,6 +64,9 @@ export default function Add() {
     new Set([]),
   );
   const [selectedBrands, setSelectedBrands] = useState<Selection>(new Set([]));
+  const [selectedFlavours, setSelectedFlavours] = useState<Selection>(
+    new Set([]),
+  );
 
   // Form fields
   const [name, setName] = useState("");
@@ -83,7 +87,7 @@ export default function Add() {
       try {
         const snapshot = await getDocs(collection(db, "ingredients"));
         const ingredientsData = snapshot.docs.map((doc) => ({
-          key: doc.id,
+          key: doc.data().key,
           label: doc.data().label,
         }));
         setIngredients(ingredientsData);
@@ -144,6 +148,7 @@ export default function Add() {
       const selectedCountryKeys = getSelectedKeys(selectedCountries);
       const selectedIngredientKeys = getSelectedKeys(selectedIngredients);
       const selectedBrandKey = getSelectedKeys(selectedBrands);
+      const selectedFlavourKeys = getSelectedKeys(selectedFlavours);
 
       const product: Product = {
         name,
@@ -161,6 +166,9 @@ export default function Add() {
         categories: [{ label: "Hot Sauce", key: "hotsauce" }],
         ingredients: selectedIngredientKeys.map(
           (key) => ingredients.find((i) => i.key === key)!,
+        ),
+        flavours: selectedFlavourKeys.map(
+          (key) => flavours.find((f) => f.key === key)!,
         ),
         description,
         imageUrls,
@@ -189,6 +197,7 @@ export default function Add() {
     setImageUrls([]);
     setSelectedCountries(new Set([]));
     setSelectedIngredients(new Set([]));
+    setSelectedFlavours(new Set([]));
     setImgSuccess(false);
   };
 
@@ -254,6 +263,25 @@ export default function Add() {
                 >
                   {(item) => (
                     <DropdownItem key={item.key}>{item.label}</DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="bordered" className="w-full">
+                    Select Flavours ({getSelectionSize(selectedFlavours)})
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  items={flavours}
+                  closeOnSelect={false}
+                  selectedKeys={selectedFlavours}
+                  selectionMode="multiple"
+                  onSelectionChange={setSelectedFlavours}
+                >
+                  {(flavour) => (
+                    <DropdownItem key={flavour.key}>{flavour.label}</DropdownItem>
                   )}
                 </DropdownMenu>
               </Dropdown>

@@ -10,6 +10,19 @@ export const brands = [
   { label: "Proper Brand", key: "proper-brand" },
 ];
 
+export const flavours = [
+  { label: "Fruity", key: "fruity" },
+  { label: "Smoky", key: "smoky" },
+  { label: "Savory", key: "savory" },
+  { label: "Citrusy", key: "citrusy" },
+  { label: "Sweet Heat", key: "sweet-heat" },
+  { label: "Herbaceous", key: "herbaceous" },
+  { label: "Vinegar", key: "vinegar" },
+  { label: "Creamy", key: "creamy" },
+  { label: "Spicy Exotic", key: "spicy-exotic" },
+  { label: "Floral", key: "floral" },
+]
+
 export const countries = [
   { label: "Mexico", key: "mexico" },
   { label: "United States", key: "united-states" },
